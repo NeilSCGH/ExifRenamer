@@ -30,6 +30,9 @@ class program():
         else:
             self.destinationFolderPath = self.sourceFolderPath
 
+        #keep the architecture or not ?
+        self.flat = self.tool.argExist("-flat")#flat = no subfolders
+
         self.keepName = self.tool.argExist("-kn")
         
         self.extensionAllowed=[".jpg",".cr2",".mp4",".mts",".mov",".tif"]
@@ -47,13 +50,31 @@ class program():
             try:
                 oldPath= (root + "/" + file).replace("\\","/")
                 newName=self.getNewName(root,file) + extension
-                subfolders = root[len(self.sourceFolderPath):]
-                newPath = self.destinationFolderPath + "/" + subfolders + "/" + newName
 
-                print("Renaming {} -> [DestFolder]{}".format(oldPath,subfolders + "/" + newName))
+                if self.flat:
+                    newPath = self.destinationFolderPath
+                else:
+                    subfolders = root[len(self.sourceFolderPath):]
+                    newPath = self.destinationFolderPath + "/" + subfolders
+                
+
+                os.makedirs(newPath, 0o777, exist_ok = True)
+                newPath = newPath + "/" + newName
+
+                print("Renaming {} -> {}".format(oldPath, newPath))
                 os.rename(oldPath, newPath)
             except:
-                print("Error with", file)
+                try:
+                    print("Error with",file)
+
+                    newPath = self.destinationFolderPath + "/invalid"
+                    os.makedirs(newPath, 0o777, exist_ok = True)
+                    newPath = newPath + "/" + newName
+
+                    print("Renaming {} -> {}".format(oldPath, newPath))
+                    os.rename(oldPath, newPath)
+                except:
+                    print("Giving up with", oldPath)
 
         else:
             print("Unallowed :", file)
