@@ -23,6 +23,13 @@ class program():
             print("Error, -f is missing !")
             exit(1)
 
+        #the destination folder for renamed files
+        if self.tool.argHasValue("-df"):
+          val = self.tool.argValue("-df")
+          self.destinationFolderPath = val.replace("\\","/")
+        else:
+            self.destinationFolderPath = self.sourceFolderPath
+
         self.keepName = self.tool.argExist("-kn")
         
         self.extensionAllowed=[".jpg",".cr2",".mp4",".mts",".mov",".tif"]
@@ -34,16 +41,16 @@ class program():
         
 
     def rename(self, root, file):
-        oldPath=root+"/"+file
         extension="." + file.split(".")[-1]
         extension=extension.lower()
         if extension in self.extensionAllowed:
-            
             try:
+                oldPath= (root + "/" + file).replace("\\","/")
                 newName=self.getNewName(root,file) + extension
-                newPath=root+"/"+newName
+                subfolders = root[len(self.sourceFolderPath):]
+                newPath = self.destinationFolderPath + "/" + subfolders + "/" + newName
 
-                print("Renaming {} -> {}".format(oldPath,newName))
+                print("Renaming {} -> [DestFolder]{}".format(oldPath,subfolders + "/" + newName))
                 os.rename(oldPath, newPath)
             except:
                 print("Error with", file)
